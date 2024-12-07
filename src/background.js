@@ -1,18 +1,5 @@
 'use strict'
-/**
- * We'll load jQuery and the Bootstrap jQuery plugin which provides support
- * for JavaScript based Bootstrap features such as modals and tabs. This
- * code may be modified to fit the specific needs of your application.
- */
 
-try {
-  window.Popper = require('@popperjs/core').default;
-  window.$ = window.jQuery = require('jquery');
-
-  require('bootstrap');
-} catch (e) {
-  console.log(e);
-}
 import { app, protocol, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
@@ -26,33 +13,30 @@ protocol.registerSchemesAsPrivileged([
 async function createWindow() {
   // Create the browser window.
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
-
+    autoHideMenuBar: true,
+    icon: './public/favicon.ico',
+    width: 1200,
+    height: 800,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false, // workaround to allow use with Electron 12+
-      // preload: path.join(__dirname, 'preload.js')
+      nodeIntegration:true,
+      // Use pluginOptions.nodeIntegration, leave this alone
+      // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
+      // nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
     }
   })
+  // win.webContents.openDevTools()
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-    if (!process.env.IS_TEST) win.webContents.openDevTools()
+    // if (!process.env.IS_TEST) win.webContents.openDevTools()
   } else {
     createProtocol('app')
     // Load the index.html when not in development
     win.loadURL('app://./index.html')
   }
 }
-
-// This is required to be set to false beginning in Electron v9 otherwise
-// the SerialPort module can not be loaded in Renderer processes like we are doing
-// in this example. The linked Github issues says this will be deprecated starting in v10,
-// however it appears to still be changed and working in v11.2.0
-// Relevant discussion: https://github.com/electron/electron/issues/18397
-app.allowRendererProcessReuse=false;
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {

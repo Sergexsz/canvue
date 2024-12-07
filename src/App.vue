@@ -1,90 +1,124 @@
 <template>
   <div class="app">
-    <h1>HONDA B-CAN</h1>
+    <div class="container">
+      <el-select v-model="selectedPort"
+                 class="el-select--small"
+                 @change="createSerial">
+        <el-option v-for="port in ports"
+                   :key="port.path"
+                   :value="port.path"
+                   :label="port.path"
+        ></el-option>
 
-    <button class="btn" @click="openPort()"> open port</button>
-    <button class="btn" @click="closePort()"> close port</button>
-    <button class="btn" @click="listSerialPorts()"> list ports</button>
-    <button class="btn" @click="writeMessage()"> submit test</button>
+        <template #prefix>
+          <button class="btn btn-sm" @click="listSerialPorts">re</button>
+          <el-tag round size="small" :type="portClosed ? 'danger': 'success'"> {{ portClosed ? 'Закрыт' : 'Открыт' }}</el-tag>
+        </template>
+      </el-select>
+      <div class="d-flex">
+        <button class="btn btn-success" v-if="device && portClosed" @click="openPort()">Открыть порт</button>
+        <button class="btn btn-danger" v-if="device && !portClosed" @click="closePort()">Закрыть порт</button>
+      </div>
 
-    <div id="error"></div>
-    <!--    <div id="ports"></div>-->
+      <button class="btn" @click="dlcList = []"> удалить устройства</button>
 
-    <table class="table">
-      <thead style="font-weight: bold">
-      <tr>
-        <td>ID</td>
-        <td>Кол-во</td>
-        <td>Частота</td>
-        <td>DLC</td>
-        <td colspan="8" style="text-align: center">Данные</td>
-        <td>Комментарий</td>
-      </tr>
-      </thead>
-      <tbody>
-      <template :key="device.id" v-for="device in deviceList">
-        <tr>
-          <!--          id-->
-          <td>{{ device.id }}</td>
-          <!--          dlc-->
-          <td>{{ device.count }}</td>
-          <td>± {{ device.frequency }}мс</td>
-          <td>{{ device.dlc }}</td>
+      <div id="error"></div>
 
-          <!--          data-->
-          <dlc-item :key="n" v-for="n in 8" :data="device.data[n - 1]"></dlc-item>
+      <inc-table v-if="dlcList && dlcList.length > 0" :dlcList="dlcList"></inc-table>
 
-          <!--          comment-->
-          <td>
-            <label>
-              <textarea @blur="saveFile" style="height: 20px" class="form-control" v-model="device.comment"></textarea>
-            </label>
-          </td>
+      <write-table @write="writeToPort"></write-table>
 
-        </tr>
-      </template>
-      </tbody>
-    </table>
-
-    <hr>
-
-    <write-table @write="writeToPort"></write-table>
-
-
+    </div>
   </div>
 </template>
 
 <script>
+// import _ from 'lodash'
 import moment from 'moment'
-import DlcItem from "@/components/dlc-item";
 import WriteTable from "@/components/write/write-table";
+import IncTable from "@/components/incoming/inc-table";
+import {ElMessage} from "element-plus";
 
-const serialport = require('serialport')
-// const tableify = require('tableify')
-
-export const sp = new serialport('/dev/tty.usbserial-14330', {
-  baudRate: 115200,
-});
-//"/dev/tty.usbserial-141240"
-
+const fs = require('fs');
+const {SerialPort, ReadlineParser} = require('serialport')
 
 export default {
   name: 'App',
-  components: {WriteTable, DlcItem},
+  components: {IncTable, WriteTable},
   data() {
     return {
-      // device: '/dev/tty.usbserial-144220',
-      // boudrate: 115200,
-      deviceList: [],
+      device: null, // рабочее устройство
+      baudRate: 115200, // скорость порта
+      selectedPort: null, // порт из списка доступных
+      ports: [], // все найденные порты
+      dlcList: [], // список устройств
+      portClosed: true, // статус порта
     }
   },
-  created() {
-    this.listSerialPorts(); // once
-    this.serialBegin();
+  async mounted() {
+    // авто загрузка портов
+    await this.listSerialPorts();
     this.openFile();
-
   },
   methods: {
+
+    // загрузить список портов
+    listSerialPorts() {
+      SerialPort.list().then((ports, err) => {
+        if (err != null || err == undefined) {
+          let devices = [];
+          for (const device of ports) {
+            if (device.vendorId != undefined) {
+              devices.push(device);
+            }
+          }
+          if (devices.length == 0) {
+            this.noDevices = true;
+          } else {
+            this.noDevices = false;
+          }
+          this.ports = devices;
+          // console.log('ports: ', ports);
+        }
+      })
+    },
+
+    // создатель считывателя
+    createSerial() {
+      this.closePort(); // close before change
+      if (this.selectedPort) {
+        this.device = new SerialPort({path: this.selectedPort, baudRate: this.baudRate}, () => {
+          this.openPort();
+        });
+      }
+    },
+    // открыть порт
+    openPort() {
+      if (this.device)
+        this.device.open(() => {
+          ElMessage.success('Порт открыт')
+          // console.log('port opened');
+          this.portClosed = false;
+          this.serialBegin(); // начать считывать
+        })
+    },
+    closePort() {
+      if (this.device)
+        this.device.close(() => {
+          this.portClosed = true;
+          ElMessage.warning('Порт закрыт')
+          // console.log('port closed');
+        });
+    },
+    serialBegin() {
+      if (this.device) {
+        // console.log('serialBegin');
+        const parser = new ReadlineParser({delimiter: '\r\n'});
+        this.device.pipe(parser)
+        parser.on('data', this.addText);
+        ElMessage.success('Идет обмен данными')
+      }
+    },
     addText(event) {
       this.handleMessage(this.parseEvent(event));
     },
@@ -115,53 +149,63 @@ export default {
       }
       return null;
     },
+    // добавить устройство в список если его еще нет
     pushDevice(message) {
-      this.deviceList.push(message);
+      this.dlcList.push({
+        ...message,
+        count: 1,
+        data: []
+      });
     },
+
+    //убрать из списка
     ejectDevice() {
 
     },
+    // обновить последнее сообщение устройства
     updateDevice(index, message) {
-      let iDevice = this.deviceList[index];
-
+      // console.log(message.data);
+      let iDevice = this.dlcList[index];
       iDevice.dlc = message.dlc;
-
+      //
       // check if data changes
-      let data = iDevice.data.map((item, index) => {
-        if (item.value !== message.data[index].value) {
-          return message.data[index]
-        }
-        return item;
-      })
-      iDevice.count++;
+      // let data = _.map(iDevice.data, (item, index) => {
+      //   console.log(item, index)
+      //   if (item.value !== message.data[index].value) {
+      //     return message.data[index]
+      //   }
+      //   return item;
+      // })
+      iDevice.count = +iDevice.count + 1;
       iDevice.frequency = message.message_at - iDevice.message_at;
-      iDevice.data = data;
+      iDevice.data = message.data;
       iDevice.message_at = message.message_at;
     },
+
+    // обработать сообщение
     handleMessage(message) {
       if (!message) {
         return;
       }
       // check if device is only one
-      let ids = this.deviceList.filter(device => {
+      let ids = this.dlcList.filter(device => {
         return device.id === message.id;
       });
 
       let devIndex = -1;
       // если одно
       if (ids.length < 2) {
-        devIndex = (this.deviceList.map(device => {
+        devIndex = (this.dlcList.map(device => {
           return device.id;
         }).indexOf(message.id));
       } else {
         // device more than 1
         // find by dlc length
-        devIndex = this.deviceList.indexOf(ids[ids.map(id => {
+        devIndex = this.dlcList.indexOf(ids[ids.map(id => {
               return id.dlc
             }).indexOf(message.dlc)]
         )
       }
-
       if (devIndex > -1) {
         /**
          * Устройство уже было на линии
@@ -169,53 +213,21 @@ export default {
         this.updateDevice(devIndex, message);
       } else {
         /**
-         * Устройство появилось на линии впервые
+         * Устройство появ илось на линии впервые
          */
         this.pushDevice(message);
       }
     },
-    serialBegin() {
-      const Readline = serialport.parsers.Readline;
-      const parser = sp.pipe(new Readline({delimiter: '\r\n'}));
-      parser.on('data', this.addText);
-    },
-    openPort() {
-      sp.open(() => {
 
-      });
-    },
-    closePort() {
-      sp.close(() => {
 
-      });
-    },
-    listSerialPorts() {
-      serialport.list().then((ports, err) => {
-        if (err) {
-          document.getElementById('error').textContent = err.message
-          return
-        } else {
-          document.getElementById('error').textContent = ''
-        }
-        console.log('ports', ports);
-
-        if (ports.length === 0) {
-          document.getElementById('error').textContent = 'No ports discovered'
-        }
-
-        // let tableHTML = tableify(ports)
-        // document.getElementById('portss').innerHTML = tableHTML
-      })
-    },
     saveFile: function () {
-      const data = JSON.stringify(this.deviceList.map(device => {
+      const data = JSON.stringify(this.dlcList.map(device => {
         return {
           id: device.id,
           dlc: device.dlc,
           comment: ''
         }
       }))
-      const fs = require('fs');
       try {
         fs.writeFileSync('can-device.json', data, 'utf-8');
       } catch (e) {
@@ -225,14 +237,21 @@ export default {
     openFile: function () {
       // const fs = require('fs');
       // let jsonDB = fs.readFileSync('can-device.json', 'utf-8');
-      // console.log(JSON.parse(jsonDB));
-      // this.deviceList = JSON.parse(jsonDB);
-    },
-    writeToPort(message){
-      sp.write(message);
-    }
-  },
 
+      // добавить в список прослушивания
+      // _.each(JSON.parse(jsonDB), dev => {
+      // this.pushDevice(dev);
+      // });
+    },
+    writeToPort(message) {
+      if (this.device)
+        this.device.write(message);
+    },
+
+  },
+  unmounted() {
+    this.closePort();
+  }
 }
 </script>
 

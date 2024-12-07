@@ -1,17 +1,30 @@
-const { IgnorePlugin } = require('webpack')
+const { defineConfig } = require('@vue/cli-service')
+module.exports = defineConfig({
+    transpileDependencies: [
+        'quasar'
+    ],
 
-module.exports = {
     pluginOptions: {
-        plugins: [
-            new IgnorePlugin({
-                resourceRegExp: /serialport/
-            })
-        ],
+        quasar: {
+            importStrategy: 'kebab',
+            rtlSupport: false
+        },
         electronBuilder: {
             nodeIntegration: true,
             externals: [
                 'serialport'
-            ]
+            ],
+            customFileProtocol: './',
+            builderOptions: {
+                appId: 'test.com',
+                win: {
+                    icon: 'public/icon.png',
+                    target: "portable"
+                },
+                linux: {
+                    icon: 'public/icon.icns',
+                }
+            },
         }
     }
-}
+});

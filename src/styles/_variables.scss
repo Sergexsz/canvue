@@ -1,0 +1,207 @@
+// Body
+//$prefix: '';
+$body-bg: #EFF2F7;
+$body-color: #495057;
+$background: #EFF2F7;
+$color: #495057;
+
+body {
+    -webkit-font-smoothing: antialiased !important;
+}
+
+// Typography
+$font-family-base: 'Source Sans Pro', sans-serif;
+$font-family-sans-serif: 'Source Sans Pro', sans-serif;
+$font-size-base: 0.82rem;
+$line-height-base: 1.6;
+$font-weight-base: 200;
+
+// Colors
+$blue: #3490dc;
+$indigo: #6574cd;
+$purple: #D12CC1;
+$pink: #f66d9b;
+$red: #e3342f;
+$orange: #DFB355;
+$yellow: #ffed4a;
+$green: #14B722;
+$teal: #4dc0b5;
+$cyan: #6cb2eb;
+$dark: #293041;
+$light: #f5f7fb;
+$white: #FFFFFF;
+$active: #d1daec;
+
+$success: #3b9635;
+$info: #3C7EFE;
+$warning: #DFB355;
+$danger: #F56B6B;
+$gray: #C4C4C4;
+$primary: $success;
+$secondary: #6C757D;
+
+$success-rgb: #3b9635;
+$info-rgb: #3C7EFE;
+$warning-rgb: #dfb355;
+$danger-rgb: #F56B6B;
+$gray-rgb: #C4C4C4;
+$primary-rgb: $success;
+
+
+.text-purple {
+    color: $purple;
+}
+
+.text-gray {
+    color: $gray;
+}
+
+.text-table-header {
+    color: #B5B5C3;
+    font-size: 90%;
+    letter-spacing: 0.1rem;
+}
+
+$badge-border-radius: 0.42rem;
+$badge-font-size: 0.7rem;
+$badge-padding-y: 0.35rem;
+$badge-padding-x: 0.75rem;
+$badge-font-weight: 400;
+
+
+//modal
+$modal-xl: 667px;
+$modal-content-bg: $white;
+$modal-footer-bg: $white;
+$modal-bg: $white;
+
+//
+$grid-breakpoints: (
+    xs: 0,
+    sm: 776px,
+    md: 968px,
+    lg: 1192px,
+    xl: 1450px
+);
+
+$container-max-widths: (
+    sm: 100%,
+    md: 100%,
+    lg: 1192px,
+    xl: 1400px
+) !default;
+
+$grid-gutter-width: 30px;
+
+////btns
+//$btn-padding-y-sm: 0.1rem;
+//$btn-padding-x-sm: 0.3rem;
+//$btn-padding-y: 0.275rem;
+//$btn-border-radius: 0.25rem;
+$btn-border-radius: 3px;
+$btn-font-weight: 300;
+$btn-padding-y: 0.475rem;
+
+
+$nav-tabs-border-color: transparent;
+$nav-tabs-border-width: 5px;
+$nav-tabs-link-active-border-color: transparent transparent $success transparent;
+$nav-tabs-link-hover-border-color: transparent transparent $success transparent;
+$nav-tabs-link-active-bg: transparent;
+
+
+$table-border-color: #EFF2F7;
+$table-cell-padding: 0.45rem;
+$table-bg: transparent;
+$table-color: inherit;
+
+
+$status-success: #C4F9D9;
+$status-danger: #FFD1D5;
+$status-warning: #FFE4C3;
+$status-info: #C7E1FF;
+$status-primary: #7E8299;
+//
+///* theme color */
+//$--color-primary: $primary !default;
+//
+///* icon font path, required */
+//$--font-path: '~element-ui/lib/theme-chalk/fonts';
+//
+//$--color-white: #fff;
+//$--color-primary-light-1: mix($--color-white, $--color-primary, 10%) !default; /* 53a8ff */
+//$--color-primary-light-2: mix($--color-white, $--color-primary, 20%) !default; /* 66b1ff */
+//$--color-primary-light-3: mix($--color-white, $--color-primary, 30%) !default; /* 79bbff */
+//$--color-primary-light-4: mix($--color-white, $--color-primary, 40%) !default; /* 8cc5ff */
+//$--color-primary-light-5: mix($--color-white, $--color-primary, 50%) !default; /* a0cfff */
+//$--color-primary-light-6: mix($--color-white, $--color-primary, 60%) !default; /* b3d8ff */
+//$--color-primary-light-7: mix($--color-white, $--color-primary, 70%) !default; /* c6e2ff */
+//$--color-primary-light-8: mix($--color-white, $--color-primary, 80%) !default; /* d9ecff */
+//$--color-primary-light-9: mix($--color-white, $--color-primary, 90%) !default; /* ecf5ff */
+//
+//$--color-success: $success !default;
+//$--color-warning: $warning !default;
+//$--color-danger: $danger !default;
+//$--color-info: $info !default;
+//$--input-height: 38px !default;
+
+
+$border-color: #DCDFE6;
+$input-border-color: #DCDFE6;
+$input-padding-y: 0.55rem;
+
+.badge {
+    background-color: #EBEDF3;
+    color: #3F4254;
+}
+
+.badge.badge-success {
+    color: #14B722;
+    background-color: #ebf9ec;
+}
+
+.badge.badge-danger {
+    color: #F64E60;
+    background-color: #FFE2E5;
+}
+
+.badge.badge-warning {
+    color: #FFA800;
+    background-color: #fff3e0;
+}
+
+.badge.badge-info {
+    color: #3C7EFE;
+    background-color: #e1eafd;
+}
+
+.btn-primary,
+.btn-info,
+.btn-warning,
+.btn-danger,
+.btn-success,
+.btn-dark,
+.btn-outline-danger:hover,
+.btn-outline-dark:hover,
+.btn-outline-success:hover,
+.btn-outline-primary:hover,
+.btn-outline-warning:hover,
+.btn-outline-info:hover,
+{
+    color: $white !important;
+}
+
+
+.btn-light,
+{
+    color: $dark !important;
+}
+
+
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active  {
+    box-shadow: 0 0 1000px inset white;
+}

@@ -1,14 +1,15 @@
 <template>
-  <table class="table">
+  <h4 class="h5 w-100 text-start">Список собственных пакетов</h4>
+  <table class="table table-sm table-striped table-bordered">
     <thead>
-    <tr>
-      <td>id</td>
-      <td>count</td>
-      <td>period</td>
-      <td>dlc</td>
+    <tr class="tr fw-bold small text-muted text-uppercase sticky-top bg-white" style="top:0">
+      <td style="width:120px">id</td>
+      <td style="width:50px">dlc</td>
       <td colspan="8">data</td>
-      <td>actions</td>
       <td>comment</td>
+      <td style="width:80px">period</td>
+      <td style="width:80px">count</td>
+      <td>actions</td>
     </tr>
     </thead>
     <tbody>
@@ -20,12 +21,12 @@
     </template>
     </tbody>
   </table>
-  <button @click="push">Добавить еще</button>
+  <button class="btn btn-success w-100 my-1" @click="push">Добавить еще</button>
 </template>
 
 <script>
-
-import WriteItem from "@/components/write/write-item";
+const fs = require('fs');
+import WriteItem from "./write-item"
 
 export default {
   name: "write-table",
@@ -33,14 +34,14 @@ export default {
   data() {
     return {
       outStock: [
-        {
-          id: "8EF87310",
-          dlc: 2,
-          count: 0,
-          period: 0,
-          data: ["F8", "0"],
-          comment: ''
-        }
+        // {
+        //   id: "8EF87310",
+        //   dlc: 2,
+        //   count: 0,
+        //   period: 0,
+        //   data: ["F8", "0"],
+        //   comment: ''
+        // }
       ]
     }
   },
@@ -75,9 +76,8 @@ export default {
       this.saveFile();
     },
     saveFile: function () {
-      console.log('save');
       const data = JSON.stringify(this.outStock);
-      const fs = require('fs');
+
       try {
         fs.writeFileSync('can-device-write.json', data, 'utf-8');
       } catch (e) {
@@ -85,9 +85,7 @@ export default {
       }
     },
     openFile: function () {
-      const fs = require('fs');
       let jsonDB = fs.readFileSync('can-device-write.json', 'utf-8');
-
       this.outStock = JSON.parse(jsonDB);
     },
   }

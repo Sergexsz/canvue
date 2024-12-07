@@ -1,0 +1,90 @@
+@use 'variables';
+// styles/element/index.scss
+/* just override what you need */
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  $colors: (
+    'primary': (
+      'base': variables.$primary,
+    ),
+     'menu-hover-bg-color': #181826,
+  ),
+   $input: (
+    //'text-color': getCssVar('text-color-regular'),
+    //'border': getCssVar('border'),
+    //'hover-border': getCssVar('border-color-hover'),
+    //'focus-border': getCssVar('color-primary'),
+    //'transparent-border': 0 0 0 1px transparent inset,
+    'border-color':  variables.$light,
+    //'border-radius': getCssVar('border-radius-base'),
+    //'bg-color': variables.$light,
+    //'icon-color': getCssVar('text-color-placeholder'),
+    //'placeholder-color': getCssVar('text-color-placeholder'),
+    //'hover-border-color': getCssVar('border-color-hover'),
+    //'clear-hover-color': getCssVar('text-color-secondary'),
+    //'focus-border-color': getCssVar('color-primary'),
+  ),
+  $common-component-size:  (
+    'large': 46px,
+    'default': 36px,
+    'small': 26px,
+  ),
+  $border-color:(
+    '': variables.$light,
+    'light': variables.$light,
+    'lighter': variables.$light,
+    'extra-light': variables.$light,
+    'dark': variables.$dark,
+    'darker': variables.$dark,
+  ),
+  $menu: (
+     'bg-color': transparent,
+     'text-color': inherit,
+     'menu-hover-bg-color': #181826,
+  ),
+  $main:(
+   'menu-hover-bg-color': #181826,
+  ),
+
+  $notification:(
+    line-height: 15px
+  )
+
+);
+
+// If you just import on demand, you can ignore the following content.
+// if you want to import all styles:
+@use "element-plus/theme-chalk/src/index.scss" as *;
+
+.dashed {
+  border-top: 2px dashed var(--el-border-color);
+}
+
+.status-success .el-input__wrapper {
+  background-color: variables.$status-success;
+  color: variables.$success
+}
+
+.status-danger .el-input__wrapper {
+  background-color: variables.$status-danger;
+  color: variables.$danger
+}
+
+.status-info .el-input__wrapper {
+  background-color: variables.$status-info;
+  color: variables.$primary
+}
+
+.status-warning .el-input__wrapper {
+  background-color: variables.$status-warning;
+  color: variables.$warning
+}
+
+.status-primary .el-input__wrapper {
+  background-color: variables.$status-primary;
+  color: variables.$primary
+}
+
+.el-input__wrapper .el-input__inner {
+  color: inherit;
+}
+
