@@ -1,6 +1,8 @@
 <template>
-  <td class="td" :class="is_changed ? 'active':''"
-      :style="'text-align:center; background: rgb(21 185 2 / '+ active_fill +'%);'">
+  <td class="td fw-bold text-center"
+      :class="is_changed ? 'active text-white':'text-success'"
+      style="width: 40px"
+      :style="'background: rgb(21 185 2 / '+ active_fill +'%);'">
     <template v-if="data">
       {{ data.value }}
     </template>

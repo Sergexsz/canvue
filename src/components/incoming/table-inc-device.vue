@@ -1,32 +1,47 @@
 <template>
   <tr>
-    <td>{{ device.id }}</td>
-    <td>{{ device.count }}</td>
-    <td>± {{ device.frequency }}мс</td>
-    <td>{{ device.dlc }}</td>
+    <td>{{ item.id }}</td>
+    <td class="text-info text-center">{{ item.dlc }}</td>
     <!--          data-->
     <dlc-item
-        v-for="n in data_lenght" :key="n"
-        :data="device.data[n-1]"></dlc-item>
+        v-for="n in data_length" :key="n"
+        :data="item.data[n-1]"></dlc-item>
+    <td>{{ item.count }}</td>
+    <td>± {{ item.frequency }}мс</td>
     <!--          comment-->
     <td>
-      <label>
-        <!--        <textarea @blur="saveFile" style="height: 20px" class="form-control" v-model="device.comment"></textarea>-->
-      </label>
+      <el-input
+          class="el-input--small"
+          v-model="device.comment"></el-input>
     </td>
-
   </tr>
 </template>
 
 <script>
 import DlcItem from "@/components/dlc-item";
+import _ from 'lodash'
 
 export default {
   name: "table-inc-device",
-  props: ['device'],
+  props: ['item', 'value', 'list'],
+  model: {
+    prop: 'value',
+    event: 'input'
+  },
   data() {
     return {
-      data_lenght: 8
+      data_length: 8
+    }
+  },
+  computed: {
+    device() {
+      if (this.list) {
+        let index = _.findIndex(this.list, {id: this.item.id});
+        if (index > -1)
+          return this.list[index]
+      }
+
+      return {};
     }
   },
   components: {DlcItem},

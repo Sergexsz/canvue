@@ -12,13 +12,19 @@ import 'element-plus/dist/index.css'
 // import './styles/element.scss'
 import ru from 'element-plus/dist/locale/ru'
 import 'dayjs/locale/ru'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+
 
 import {createApp} from 'vue'
 import App from './App.vue'
 import {Quasar} from 'quasar'
 import quasarUserOptions from './quasar-user-options'
 
-createApp(App)
-    .use(ElementPlus, {locale: ru})
-    .use(Quasar, quasarUserOptions)
-    .mount('#app')
+const app = createApp(App);
+
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+    app.component(key, component)
+}
+app.use(ElementPlus, {locale: ru})
+app.use(Quasar, quasarUserOptions)
+app.mount('#app')

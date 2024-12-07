@@ -1,64 +1,75 @@
 <template>
   <div class="app">
     <div class="container">
-      <el-select v-model="selectedPort"
-                 class="el-select--small"
-                 @change="createSerial">
-        <el-option v-for="port in ports"
-                   :key="port.path"
-                   :value="port.path"
-                   :label="port.path"
-        ></el-option>
+      <div class="bg-white p-2 shadow rounded mb-2">
+        <div class="d-flex justify-content-between mb-2">
+          <div class="fw-bold w-100 text-start">Выбрать порт</div>
+          <button class="btn btn-sm" @click="listSerialPorts">Обновить</button>
+        </div>
+        <el-select v-model="selectedPort"
+                   clearable
+                   class="el-select--small"
+                   @change="createSerial">
+          <el-option v-for="port in ports"
+                     :key="port.path"
+                     :value="port.path"
+                     :label="port.path"
+          ></el-option>
 
-        <template #prefix>
-          <button class="btn btn-sm" @click="listSerialPorts">re</button>
-          <el-tag round size="small" :type="portClosed ? 'danger': 'success'"> {{ portClosed ? 'Закрыт' : 'Открыт' }}</el-tag>
-        </template>
-      </el-select>
-      <div class="d-flex">
-        <button class="btn btn-success" v-if="device && portClosed" @click="openPort()">Открыть порт</button>
-        <button class="btn btn-danger" v-if="device && !portClosed" @click="closePort()">Закрыть порт</button>
+          <template #prefix>
+            <el-tag round size="small" :type="portClosed ? 'danger': 'success'">
+              {{ portClosed ? 'Закрыт' : 'Открыт' }}
+            </el-tag>
+          </template>
+        </el-select>
+        <div class="d-flex">
+          <!--        <button class="btn btn-success" v-if="serialdevice && portClosed" @click="openPort()">Открыть порт</button>-->
+          <!--        <button class="btn btn-danger" v-if="serialdevice && !portClosed" @click="closePort()">Закрыть порт</button>-->
+        </div>
       </div>
 
-      <button class="btn" @click="dlcList = []"> удалить устройства</button>
 
       <div id="error"></div>
 
-      <inc-table v-if="dlcList && dlcList.length > 0" :dlcList="dlcList"></inc-table>
+      <inc-table @clear="dlcList = []" :dlcList="dlcList"></inc-table>
 
-      <write-table @write="writeToPort"></write-table>
+      <write-table @written="writeToPort"></write-table>
 
     </div>
   </div>
 </template>
 
 <script>
-// import _ from 'lodash'
+import _ from 'lodash'
 import moment from 'moment'
 import WriteTable from "@/components/write/write-table";
 import IncTable from "@/components/incoming/inc-table";
 import {ElMessage} from "element-plus";
 
 const fs = require('fs');
-const {SerialPort, ReadlineParser} = require('serialport')
+const {SerialPort, ReadlineParser} = require('serialport');
+
+let serialdevice = null;
 
 export default {
   name: 'App',
   components: {IncTable, WriteTable},
   data() {
     return {
-      device: null, // рабочее устройство
+      // serialdevice: null, // рабочее устройство
       baudRate: 115200, // скорость порта
       selectedPort: null, // порт из списка доступных
       ports: [], // все найденные порты
       dlcList: [], // список устройств
       portClosed: true, // статус порта
+      delimiter: '\r\n'
     }
   },
   async mounted() {
     // авто загрузка портов
     await this.listSerialPorts();
-    this.openFile();
+    // this.openFile();
+
   },
   methods: {
 
@@ -85,41 +96,40 @@ export default {
 
     // создатель считывателя
     createSerial() {
-      this.closePort(); // close before change
+      if (serialdevice && !this.portClosed)
+        this.closePort(); // close before change
+
       if (this.selectedPort) {
-        this.device = new SerialPort({path: this.selectedPort, baudRate: this.baudRate}, () => {
+        // console.log(this.selectedPort);
+        serialdevice = new SerialPort({path: this.selectedPort, baudRate: this.baudRate}, () => {
           this.openPort();
         });
       }
     },
     // открыть порт
     openPort() {
-      if (this.device)
-        this.device.open(() => {
-          ElMessage.success('Порт открыт')
-          // console.log('port opened');
-          this.portClosed = false;
-          this.serialBegin(); // начать считывать
-        })
+      serialdevice.open(() => {
+        this.portClosed = false;
+        this.serialBegin(); // начать считывать
+        ElMessage.success('Порт открыт')
+      })
     },
     closePort() {
-      if (this.device)
-        this.device.close(() => {
+      if (serialdevice)
+        serialdevice.close(() => {
           this.portClosed = true;
           ElMessage.warning('Порт закрыт')
-          // console.log('port closed');
         });
     },
     serialBegin() {
-      if (this.device) {
-        // console.log('serialBegin');
-        const parser = new ReadlineParser({delimiter: '\r\n'});
-        this.device.pipe(parser)
-        parser.on('data', this.addText);
+      if (serialdevice) {
         ElMessage.success('Идет обмен данными')
+        const parser = new ReadlineParser({delimiter: this.delimiter});
+        serialdevice.pipe(parser)
+        parser.on('data', this.handleEvent);
       }
     },
-    addText(event) {
+    handleEvent(event) {
       this.handleMessage(this.parseEvent(event));
     },
     parseEvent(message) {
@@ -145,7 +155,7 @@ export default {
           }
         }
       } else {
-        console.log(message);
+        // console.log(message);
       }
       return null;
     },
@@ -164,7 +174,6 @@ export default {
     },
     // обновить последнее сообщение устройства
     updateDevice(index, message) {
-      // console.log(message.data);
       let iDevice = this.dlcList[index];
       iDevice.dlc = message.dlc;
       //
@@ -213,39 +222,22 @@ export default {
         this.updateDevice(devIndex, message);
       } else {
         /**
-         * Устройство появ илось на линии впервые
+         * Устройство появилось на линии впервые
          */
         this.pushDevice(message);
       }
     },
-
-
-    saveFile: function () {
-      const data = JSON.stringify(this.dlcList.map(device => {
-        return {
-          id: device.id,
-          dlc: device.dlc,
-          comment: ''
-        }
-      }))
-      try {
-        fs.writeFileSync('can-device.json', data, 'utf-8');
-      } catch (e) {
-        alert('Failed to save the file !');
-      }
-    },
     openFile: function () {
-      // const fs = require('fs');
-      // let jsonDB = fs.readFileSync('can-device.json', 'utf-8');
+      let jsonDB = fs.readFileSync('can-device.json', 'utf-8');
 
       // добавить в список прослушивания
-      // _.each(JSON.parse(jsonDB), dev => {
-      // this.pushDevice(dev);
-      // });
+      _.each(JSON.parse(jsonDB), dev => {
+        this.pushDevice(dev);
+      });
     },
     writeToPort(message) {
-      if (this.device)
-        this.device.write(message);
+      if (serialdevice)
+        serialdevice.write(message);
     },
 
   },
