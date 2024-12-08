@@ -2,36 +2,43 @@
   <div class="bg-white p-2 shadow rounded mb-2">
     <input type="file" @change="fileSelect" ref="file" class="d-none">
 
-    <div class="d-inline-block w-100 text-start mb-2">
-      <div class="fw-bold w-100 text-start d-inline me-3">Список собственных пакетов</div>
-      <button class="btn btn-outline-info btn-sm me-2" @click="saveToLocal">Сохранить в файл</button>
-      <button class="btn btn-outline-info btn-sm me-2" @click="$refs.file.click()">Загрузить из файла</button>
-      <button class="btn btn-outline-info btn-sm me-2" @click="pushDevices">В список устройств</button>
-      <button class="btn btn-success btn-sm" @click="push">Добавить</button>
+    <div class="d-flex w-100 text-start mb-2 justify-content-between align-items-center">
+      <div class="fw-bold w-100 text-start w-25 me-3">Список собственных пакетов
+        ({{ outStock.length }})
+      </div>
+      <div class="w-75 text-end">
+        <button class="btn btn-outline-info btn-sm me-2" @click="saveToLocal">Сохранить в файл</button>
+        <button class="btn btn-outline-info btn-sm me-2" @click="$refs.file.click()">Загрузить из файла</button>
+        <button class="btn btn-outline-info btn-sm me-2" @click="pushDevices">В список устройств</button>
+        <button class="btn btn-success btn-sm" @click="push">Добавить</button>
+      </div>
     </div>
-    <table class="table table-sm table-striped table-bordered">
-      <thead>
-      <tr class="tr fw-bold small text-muted text-uppercase sticky-top bg-white" style="top:0">
-        <td style="width:120px">id</td>
-        <td style="width:50px">dlc</td>
-        <td colspan="8">data</td>
-        <td>comment</td>
-        <td style="width:80px">period</td>
-        <td style="width:80px">count</td>
-        <td>actions</td>
-      </tr>
-      </thead>
-      <tbody>
-      <write-item
-          v-for="(out,index) in outStock"
-          :key="index"
-          v-model="outStock"
-          :value="out"
-          @input="saveFile"
-          @delete="removeItem(out)"
-          @written="writeMessage(out)"></write-item>
-      </tbody>
-    </table>
+    <div class="overflow-auto" style="max-height: 350px">
+
+      <table class="table table-sm table-striped table-bordered">
+        <thead>
+        <tr class="tr fw-bold small text-muted text-uppercase sticky-top bg-white" style="top:0">
+          <td style="width:120px">id</td>
+          <td style="width:50px">dlc</td>
+          <td colspan="8">data</td>
+          <td>comment</td>
+          <td style="width:80px">period</td>
+          <td style="width:80px">count</td>
+          <td>actions</td>
+        </tr>
+        </thead>
+        <tbody>
+        <write-item
+            v-for="(out,index) in outStock"
+            :key="index"
+            v-model="outStock"
+            :value="out"
+            @input="saveFile"
+            @delete="removeItem(out)"
+            @written="writeMessage(out)"></write-item>
+        </tbody>
+      </table>
+    </div>
     <button class="btn btn-success w-100 my-1" @click="push">Добавить еще</button>
   </div>
 </template>

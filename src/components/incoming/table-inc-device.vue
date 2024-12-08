@@ -16,7 +16,7 @@
     </td>
     <td style="width: 20px;">
       <el-tooltip placement="left" content="Копировать текущее состояние в команды">
-        <button class="btn btn-sm" @click="copyToWriteTable">
+        <button class="btn btn-sm p-0" @click="copyToWriteTable">
           <el-icon>
             <CopyDocument/>
           </el-icon>

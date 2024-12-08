@@ -1,8 +1,8 @@
 <template>
   <div class="div shadow p-2 bg-white rounded mb-4">
     <input ref="file" type="file" @change="fileSelect" class="d-none">
-    <div class="d-flex justify-content-between">
-      <div class="fw-bold">Устройства на линии</div>
+    <div class="d-flex justify-content-between mb-2">
+      <div class="fw-bold">Устройства на линии ({{dlcList.length}})</div>
       <div class="">
         <!--        <button class="btn" @click="clearFile">clearFile</button>-->
         <!--        <button class="btn" @click="openFile">openFile</button>-->
@@ -11,30 +11,33 @@
         <button class="btn btn-sm" @click="$emit('clear')">Очистить список</button>
       </div>
     </div>
-    <table class="table table-striped table-sm">
-      <thead class="sticky-top bg-white">
-      <tr class="fw-bold small text-uppercase text-muted">
-        <td style="width:50px">ID</td>
+    <div class="overflow-auto" style="max-height: 350px">
 
-        <td style="width:50px" class="text-center text-info">DLC</td>
-        <td colspan="8" style="text-align: center">Данные</td>
-        <td style="width:60px">Кол-во</td>
-        <td style="width:80px">Частота</td>
-        <td>Название</td>
-        <td></td>
-      </tr>
-      </thead>
-      <tbody>
-      <table-inc-device
-          @createdDevice="checkAndPushStore"
-          v-model="devicesData"
-          :list="devicesData"
-          @input="saveFile"
-          :key="device"
-          v-for="device in dlcList"
-          :item="device"></table-inc-device>
-      </tbody>
-    </table>
+      <table class="table table-striped table-sm">
+        <thead class="sticky-top bg-white">
+        <tr class="fw-bold small text-uppercase text-muted">
+          <td style="width:50px">ID</td>
+
+          <td style="width:50px" class="text-center text-info">DLC</td>
+          <td colspan="8" style="text-align: center">Данные</td>
+          <td style="width:60px">Кол-во</td>
+          <td style="width:80px">Частота</td>
+          <td>Название</td>
+          <td></td>
+        </tr>
+        </thead>
+        <tbody>
+        <table-inc-device
+            @createdDevice="checkAndPushStore"
+            v-model="devicesData"
+            :list="devicesData"
+            @input="saveFile"
+            :key="device"
+            v-for="device in dlcList"
+            :item="device"></table-inc-device>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
