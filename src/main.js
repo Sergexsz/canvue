@@ -14,14 +14,17 @@ import ru from 'element-plus/dist/locale/ru'
 import 'dayjs/locale/ru'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
-
 import {createApp} from 'vue'
 import App from './App.vue'
 import {Quasar} from 'quasar'
 import quasarUserOptions from './quasar-user-options'
 
-const app = createApp(App);
+import mitt from 'mitt';
+const emitter = mitt();
 
+
+const app = createApp(App);
+app.config.globalProperties.emitter = emitter;
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
 }

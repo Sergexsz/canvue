@@ -5,6 +5,7 @@
   }">
     <td>
       <el-input class="fw-bold el-input--small" type="text"
+                @input="$emit('input')"
                 v-model="outPack.id"></el-input>
     </td>
     <td>
@@ -12,6 +13,7 @@
           class=" el-input--small"
           type="number"
           :max="8"
+          @input="$emit('input')"
           v-model="outPack.dlc"></el-input>
     </td>
     <template :key="n" v-for="n in 8">
@@ -19,6 +21,7 @@
         <el-input
             class="el-input--small"
             v-if="n <= outPack.dlc"
+            @input="$emit('input')"
             type="text" v-model="outPack.data[n-1]"></el-input>
       </td>
     </template>
@@ -44,6 +47,7 @@
       <el-input class=" el-input--small"
                 type="text"
                 clearable
+                @input="$emit('input')"
                 @clear="$emit('input')"
                 v-model="outPack.count"></el-input>
     </td>

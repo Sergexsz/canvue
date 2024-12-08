@@ -14,12 +14,22 @@
           class="el-input--small"
           v-model="device.comment"></el-input>
     </td>
+    <td style="width: 20px;">
+      <el-tooltip placement="left" content="Копировать текущее состояние в команды">
+        <button class="btn btn-sm" @click="copyToWriteTable">
+          <el-icon>
+            <CopyDocument/>
+          </el-icon>
+        </button>
+      </el-tooltip>
+    </td>
   </tr>
 </template>
 
 <script>
 import DlcItem from "@/components/dlc-item";
 import _ from 'lodash'
+import {CopyDocument} from "@element-plus/icons-vue";
 
 export default {
   name: "table-inc-device",
@@ -28,6 +38,7 @@ export default {
     prop: 'value',
     event: 'input'
   },
+  emits: ['createdDevice'],
   data() {
     return {
       data_length: 8
@@ -44,7 +55,16 @@ export default {
       return {};
     }
   },
-  components: {DlcItem},
+  components: {CopyDocument, DlcItem},
+  created() {
+    this.$emit('createdDevice', {id: this.item.id, dlc: this.item.dlc});
+    // console.log('created device id= '+ this.item.id)
+  },
+  methods:{
+    copyToWriteTable(){
+      this.emitter.emit("save-to-write-table", this.item);
+    }
+  }
 }
 </script>
 

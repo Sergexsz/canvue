@@ -16,7 +16,7 @@ module.exports = defineConfig({
             ],
             customFileProtocol: './',
             builderOptions: {
-                appId: 'test.com',
+                appId: 'red-look.ru',
                 win: {
                     icon: 'public/icon.png',
                     target: "portable"

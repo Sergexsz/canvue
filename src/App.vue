@@ -23,40 +23,41 @@
           </template>
         </el-select>
         <div class="d-flex">
-          <!--        <button class="btn btn-success" v-if="serialdevice && portClosed" @click="openPort()">Открыть порт</button>-->
-          <!--        <button class="btn btn-danger" v-if="serialdevice && !portClosed" @click="closePort()">Закрыть порт</button>-->
+          <!--        <button class="btn btn-success" v-if="serialDevice && portClosed" @click="openPort()">Открыть порт</button>-->
+          <!--        <button class="btn btn-danger" v-if="serialDevice && !portClosed" @click="closePort()">Закрыть порт</button>-->
         </div>
       </div>
 
 
       <div id="error"></div>
 
-      <inc-table @clear="dlcList = []" :dlcList="dlcList"></inc-table>
+      <inc-table @clear="dlcList = []"
+                 :dlcList="dlcList"></inc-table>
 
-      <write-table @written="writeToPort"></write-table>
+      <write-table
+          @pushDevice="pushDevice"
+          @written="writeToPort"></write-table>
 
     </div>
   </div>
 </template>
 
 <script>
-import _ from 'lodash'
 import moment from 'moment'
 import WriteTable from "@/components/write/write-table";
 import IncTable from "@/components/incoming/inc-table";
 import {ElMessage} from "element-plus";
+import _ from 'lodash'
 
-const fs = require('fs');
 const {SerialPort, ReadlineParser} = require('serialport');
-
-let serialdevice = null;
+let serialDevice = null;
 
 export default {
   name: 'App',
   components: {IncTable, WriteTable},
   data() {
     return {
-      // serialdevice: null, // рабочее устройство
+      // serialDevice: null, // рабочее устройство
       baudRate: 115200, // скорость порта
       selectedPort: null, // порт из списка доступных
       ports: [], // все найденные порты
@@ -96,36 +97,36 @@ export default {
 
     // создатель считывателя
     createSerial() {
-      if (serialdevice && !this.portClosed)
+      if (serialDevice && !this.portClosed)
         this.closePort(); // close before change
 
       if (this.selectedPort) {
         // console.log(this.selectedPort);
-        serialdevice = new SerialPort({path: this.selectedPort, baudRate: this.baudRate}, () => {
+        serialDevice = new SerialPort({path: this.selectedPort, baudRate: this.baudRate}, () => {
           this.openPort();
         });
       }
     },
     // открыть порт
     openPort() {
-      serialdevice.open(() => {
+      serialDevice.open(() => {
         this.portClosed = false;
         this.serialBegin(); // начать считывать
         ElMessage.success('Порт открыт')
       })
     },
     closePort() {
-      if (serialdevice)
-        serialdevice.close(() => {
+      if (serialDevice)
+        serialDevice.close(() => {
           this.portClosed = true;
           ElMessage.warning('Порт закрыт')
         });
     },
     serialBegin() {
-      if (serialdevice) {
+      if (serialDevice) {
         ElMessage.success('Идет обмен данными')
         const parser = new ReadlineParser({delimiter: this.delimiter});
-        serialdevice.pipe(parser)
+        serialDevice.pipe(parser)
         parser.on('data', this.handleEvent);
       }
     },
@@ -161,11 +162,12 @@ export default {
     },
     // добавить устройство в список если его еще нет
     pushDevice(message) {
-      this.dlcList.push({
-        ...message,
-        count: 1,
-        data: []
-      });
+      if (_.findIndex(this.dlcList, {id: message.id}) === -1)
+        this.dlcList.push({
+          ...message,
+          count: 1,
+          data: []
+        });
     },
 
     //убрать из списка
@@ -227,17 +229,9 @@ export default {
         this.pushDevice(message);
       }
     },
-    openFile: function () {
-      let jsonDB = fs.readFileSync('can-device.json', 'utf-8');
-
-      // добавить в список прослушивания
-      _.each(JSON.parse(jsonDB), dev => {
-        this.pushDevice(dev);
-      });
-    },
     writeToPort(message) {
-      if (serialdevice)
-        serialdevice.write(message);
+      if (serialDevice)
+        serialDevice.write(message);
     },
 
   },

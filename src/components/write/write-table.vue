@@ -1,7 +1,12 @@
 <template>
   <div class="bg-white p-2 shadow rounded mb-2">
-    <div class="d-flex justify-content-between mb-2">
-      <div class="fw-bold w-100 text-start">Список собственных пакетов</div>
+    <input type="file" @change="fileSelect" ref="file" class="d-none">
+
+    <div class="d-inline-block w-100 text-start mb-2">
+      <div class="fw-bold w-100 text-start d-inline me-3">Список собственных пакетов</div>
+      <button class="btn btn-outline-info btn-sm me-2" @click="saveToLocal">Сохранить в файл</button>
+      <button class="btn btn-outline-info btn-sm me-2" @click="$refs.file.click()">Загрузить из файла</button>
+      <button class="btn btn-outline-info btn-sm me-2" @click="pushDevices">В список устройств</button>
       <button class="btn btn-success btn-sm" @click="push">Добавить</button>
     </div>
     <table class="table table-sm table-striped table-bordered">
@@ -33,14 +38,18 @@
 
 <script>
 import {ElMessage} from "element-plus";
-
-const fs = require('fs');
 import WriteItem from "./write-item"
+
+import Store from 'electron-store'
+import _ from "lodash";
+
+const eStore = new Store();
+const fileName = 'canWriteTable';
 
 export default {
   name: "write-table",
   components: {WriteItem},
-  emits: ['written'],
+  emits: ['written', 'pushDevice'],
   data() {
     return {
       outStock: [
@@ -55,10 +64,44 @@ export default {
       ]
     }
   },
-  created() {
+  mounted() {
     this.openFile();
+    this.emitter.on("save-to-write-table", this.pushPreData);
   },
   methods: {
+    // сохранить талицу в файл
+    saveToLocal() {
+      let data = JSON.stringify(this.outStock);
+      let file = new Blob([data], {type: "application/json"});
+      let a = document.createElement("a"),
+          url = URL.createObjectURL(file);
+      a.href = url;
+      a.download = "can-write-table.json";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 0);
+    },
+    // скачать таблицу в файл
+    fileSelect($event) {
+      let file = $event.target.files[0];
+      if (file && file.type === "application/json") {
+        let reader = new FileReader();
+        if (reader) {
+          let self = this;
+          reader.readAsText(file, "UTF-8");
+          reader.onload = function (evt) {
+            self.outStock = JSON.parse(evt.target.result);
+            ElMessage.success('Таблица данных обновлена')
+          }
+        }
+      } else {
+        ElMessage.error('Неверный файл')
+      }
+      this.$refs.file.value = '';
+    },
     writeMessage(out) {
       let device = parseInt(out.id, 16);
       let dlc = out.dlc;
@@ -67,6 +110,21 @@ export default {
       });
       this.$emit("written", 'w' + device + '.' + dlc + '.' + data.join('.'));
       out.count = +out.count + 1;
+    },
+    pushPreData(item) {
+      this.outStock.push(
+          {
+            id: item.id,
+            dlc: item.dlc,
+            count: 0,
+            period: 0,
+            data: _.map(item.data, v => {
+              return v.value
+            }),
+            comment: ''
+          }
+      );
+      this.saveFile();
     },
     push() {
       this.outStock.push(
@@ -85,19 +143,23 @@ export default {
       this.outStock.splice(this.outStock.indexOf(out), 1);
       this.saveFile();
     },
-
     saveFile: function () {
-      const data = JSON.stringify(this.outStock);
       try {
-        fs.writeFileSync('can-device-write.json', data, 'utf-8');
+        eStore.set(fileName, this.outStock);
         ElMessage.success('Сохранено');
       } catch (e) {
         ElMessage.error('Не удалось сохранить в файл');
       }
     },
+    pushDevices() {
+      // добавить в список прослушивания
+      _.each(this.outStock, dev => {
+        this.$emit('pushDevice', dev);
+      });
+    },
     openFile: function () {
-      let jsonDB = fs.readFileSync('can-device-write.json', 'utf-8');
-      this.outStock = JSON.parse(jsonDB);
+      if (eStore.get(fileName))
+        this.outStock = eStore.get(fileName);
     },
 
 
