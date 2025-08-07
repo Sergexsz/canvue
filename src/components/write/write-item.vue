@@ -81,7 +81,7 @@ export default {
   data() {
     return {
       interval: null,
-      periods: [0, 100, 200, 300, 400, 500, 1000, 2000, 5000]
+      periods: [0,10, 50, 100, 200, 300, 400, 500, 1000, 2000, 5000]
     }
   },
   model: {
@@ -103,7 +103,7 @@ export default {
     },
     // отправить в шину
     write() {
-      if (this.outPack.period > 99)
+      if (this.outPack.period > 9)
         this.$emit('written');
     },
     //редактировать описание

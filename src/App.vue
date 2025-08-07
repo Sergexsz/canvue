@@ -229,9 +229,15 @@ export default {
         this.pushDevice(message);
       }
     },
-    writeToPort(message) {
+    writeToPort(buffer) {
+      // console.log(buffer);
       if (serialDevice)
-        serialDevice.write(message);
+        serialDevice.write(buffer, (err) => {
+          if (err) {
+            console.error("Ошибка отправки:", err);
+          }
+        });
+
     },
 
   },

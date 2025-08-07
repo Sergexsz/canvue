@@ -11,7 +11,7 @@ MCP2515 mcp2515(10); //cs pin bt boart 4.1
 
 // au pins:
 int aunstb = 4;
-int aumode = 10; // 4.1 (10 for 4)
+int aumode = 5; // 4.1 (10 for 4)
 
 
 bool show_out = false; // показывать исходящие
@@ -27,15 +27,17 @@ uint32_t deviceList[8];
 
 void setup() {
   Serial.begin(115200);
+    Serial.println("START");
+
 
   pinMode(aumode, OUTPUT);
   pinMode(aunstb, OUTPUT);
 
   mcp2515.reset();
-  mcp2515.setBitrate(CAN_33KBPS, MCP_16MHZ);
+  // mcp2515.setBitrate(CAN_33KBPS, MCP_16MHZ);
   // выбрать какой осцилятор стоит
     // mcp2515.setBitrate(CAN_33KBPS, MCP_8MHZ);
-  //mcp2515.setBitrate(CAN_500KBPS, MCP_16MHZ); // ф-кан 500кб/с
+  mcp2515.setBitrate(CAN_500KBPS, MCP_16MHZ); // ф-кан 500кб/с
   mcp2515.setNormalMode();
 
   standByModule(true); // activate module
@@ -118,11 +120,11 @@ void loop() {
     }
   }
 
-
   /**
      READ CAN
   */
   if (mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK) {
+
     sleepTimer = millis();
     can_sleep = false;
     if (show_in) {

@@ -110,14 +110,33 @@ export default {
       this.$refs.file.value = '';
     },
     writeMessage(out) {
-      let device = parseInt(out.id, 16);
-      let dlc = out.dlc;
-      let data = out.data.map(bit => {
-        return parseInt(bit, 16);
-      });
-      this.$emit("written", 'w' + device + '.' + dlc + '.' + data.join('.'));
+      const device = parseInt(out.id, 16); // например "0x200" -> 512
+      const dlc = parseInt(out.dlc, 10);   // длина 0..8
+      const data = out.data.map(b => parseInt(b, 16)); // массив байтов
+
+      // this.$emit("written", 'w' + device + '.' + dlc + '.' + data.join('.'));
+     // out.count = +out.count + 1;
+
+      const buffer = Buffer.alloc(15);
+      buffer[0] = 0xAA;
+
+      // Записываем ID (4 байта, Big Endian)
+      buffer.writeUInt32BE(device >>> 0, 1);
+
+      buffer[5] = dlc;
+
+      for (let i = 0; i < 8; i++) {
+        buffer[6 + i] = i < data.length ? data[i] : 0x00;
+      }
+
+      buffer[14] = 0x55;
+
+      // Отправка по порту
+      this.$emit("written", buffer);
       out.count = +out.count + 1;
+
     },
+
     pushPreData(item) {
       this.outStock.push(
           {
