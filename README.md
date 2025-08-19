@@ -1,4 +1,11 @@
-# canvue
+# Сan Vue Electron Project
+
+Проект для анализа и эмуляции работы CAN
+(Car Area Network)
+
+Позволяет выполнять обмен через TTL (UART) между Atmega/Stm32
+
+Необходимо в прошивке задать свои настройки скорости
 
 ## Project setup
 ```
@@ -14,11 +21,3 @@ npm run serve
 ```
 npm run build
 ```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
