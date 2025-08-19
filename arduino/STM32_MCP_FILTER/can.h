@@ -29,8 +29,8 @@ private:
   static const uint32_t VSA = 0x090;     //
   static const uint32_t ECUVIN = 0x40C;  // vin number data
 
-  void connectFCAN();
-  void connectBCAN();
+  void connectCAN1();
+  void connectCAN2();
 
   void handleVIN();
   void handleOdometer();
@@ -45,7 +45,7 @@ public:
   bool begin();
   void readData();
   void processData(); 
-  
+
   bool can1_active = true;
   bool can2_active = true;
   bool converter = false;

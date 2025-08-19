@@ -1,18 +1,16 @@
 //**************************************************************//
 //  Name    : Can Bus LIB.                                      //
 //  Author  : SERGEY KHRAPIN                                    //
-//  Date    : 21 Aor, 2025                                      //
 //  Version : 1.0                                               //
-//  Notes   : Honda Accord 7 Canbus controller                  //
+//  Notes   : Honda Canbus controller                           //
 //          :                                                   //
 //****************************************************************
 
 #include "can.h"
 #include <SPI.h>
 #include "mcp_can.h"
-#include "Android.h"
+#include "setup.h"
 
-// #define CAN_INT PA0  // Прерывание MCP2515
 
 MCP_CAN CANB(CAN1_CS);  // Объект для работы с MCP2515
 MCP_CAN CANF(CAN2_CS);  // Объект для работы с MCP2515
@@ -23,7 +21,7 @@ bool CanBus::begin() {
   return can1_active && can2_active;
 }
 
-void CanBus::connectCAN2() {
+void CanBus::connectCAN1() {
   uint8_t initResult = CANB.begin(MCP_STDEXT, CAN1_SPEED, MCP_16MHZ);
   if (initResult == CAN_OK) {
     can1_active = true;
@@ -67,9 +65,6 @@ void CanBus::connectCAN2() {
 }
 
 void CanBus::readData() {
-  // pinMode(CAN_INT, INPUT);  // Configuring pin for /INT input
-  // If CAN0_INT pin is low, read receive buffer
-
   if (!can1_active) {
     Serial.println("connectCAN 1...");
     connectCAN1();
@@ -88,12 +83,12 @@ void CanBus::readData() {
   if (CANB.checkReceive() == CAN_MSGAVAIL) {
     if (CANB.readMsgBuf(&rxId, &len, rxBuf) == CAN_OK) {
       processData();
-    } 
+    }
   }
 }
 
 void CanBus::processData() {
- 
+
   if (converter) {
     Serial.print("<--");
     Serial.print(rxId, HEX);  // print ID
@@ -107,9 +102,10 @@ void CanBus::processData() {
     Serial.println();
 
 
-    // тут можно обработку сделать 
+    // тут можно обработку сделать
   }
- 
+}
+
 
 void CanBus::handleVIN() {
   // адрес 40С
@@ -148,6 +144,6 @@ void CanBus::handleOdometer() {
   //пробег 06 54 53 = 414803
   uint32_t odometer = ((uint32_t)rxBuf[5] << 16) | ((uint32_t)rxBuf[6] << 8) | rxBuf[7];
 }
- 
+
 
 CanBus can;
