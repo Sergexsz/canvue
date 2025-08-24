@@ -50,6 +50,9 @@ public:
   bool can2_active = true;
   bool converter = false;
   char vin[18];  // VIN код максимум 17 символов
+  void sendCan1(int id, bool ext, int dlc, byte *buf);
+    void sendCan2(int id, bool ext, int dlc, byte *buf);
+
 };
 
 extern CanBus can;

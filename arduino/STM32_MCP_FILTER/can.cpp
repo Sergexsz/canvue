@@ -64,6 +64,15 @@ void CanBus::connectCAN2() {
   }
 }
 
+
+void CanBus::sendCan1(int id, bool ext, int dlc, byte *buf) {
+  CANB.sendMsgBuf(id, ext, dlc, buf);
+}
+
+void CanBus::sendCan2(int id, bool ext, int dlc, byte *buf) {
+  CANF.sendMsgBuf(id, ext, dlc, buf);
+}
+
 void CanBus::readData() {
   if (!can1_active) {
     Serial.println("connectCAN 1...");

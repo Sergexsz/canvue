@@ -618,9 +618,9 @@ void setup() {
   Serial1.begin(115200);
 
   // bool ret = CANInit(CAN_33KBPS, 2);  // CAN_RX mapped to PB8, CAN_TX mapped to PB9
-  // bool ret = CANInit(CAN_33KBPS, 0);  // CAN_RX mapped to PA11, CAN_TX mapped to PA12
-  bool ret = CANInit(CAN_500KBPS, 0);  // CAN_RX mapped to PA11, CAN_TX mapped to PA12
-  //bool ret = CANInit(CAN_500KBPS, 2);  // CAN_RX mapped to PB8, CAN_TX mapped to PB9
+  bool ret = CANInit(CAN_33KBPS, 0);  // CAN_RX mapped to PA11, CAN_TX mapped to PA12
+  // bool ret = CANInit(CAN_500KBPS, 0);  // CAN_RX mapped to PA11, CAN_TX mapped to PA12
+  // bool ret = CANInit(CAN_500KBPS, 2);  // CAN_RX mapped to PB8, CAN_TX mapped to PB9
   //bool ret = CANInit(CAN_500KBPS, 3);  // CAN_RX mapped to PD0, CAN_TX mapped to PD1
   //bool ret = CANInit(CAN_1000KBPS, 0);  // CAN_RX mapped to PA11, CAN_TX mapped to PA12
   //bool ret = CANInit(CAN_1000KBPS, 2);  // CAN_RX mapped to PB8, CAN_TX mapped to PB9
@@ -796,8 +796,23 @@ void loop() {
     //  handleTaho();
   }
 
-  // sendSpeed();
+  turnLights();
+
+  sendSpeed();
 }
+
+void turnLights(){
+
+    CAN_TX_msg.id = 0x0AF81111;
+    CAN_TX_msg.len = 2;
+    CAN_TX_msg.format = EXTENDED_FORMAT;
+    CAN_TX_msg.data[0] = 0x02;
+    CAN_TX_msg.data[1] = 0x43;  
+
+    CANSend(&CAN_TX_msg);
+}
+
+
 void printIncoming() {
   Serial1.print("<--");
   Serial1.print(CAN_RX_msg.id, HEX);  // print ID
@@ -813,41 +828,41 @@ void printIncoming() {
   Serial1.println();
 }
 
-// void sendSpeed() {
-//   int speed_kmh = 130;
+void sendSpeed() {
+  int speed_kmh = 130;
 
-//   uint16_t scaledSpeed = speed_kmh * 93.5;
-//   CAN_TX_msg.id = 0xC8;
-//   CAN_TX_msg.len = 8;
-//   CAN_TX_msg.format = STANDARD_FORMAT;
-//   CAN_TX_msg.data[0] = 0x00;
-//   CAN_TX_msg.data[1] = 0x00;
-//   CAN_TX_msg.data[2] = 0x00;
-//   CAN_TX_msg.data[3] = 0x00;
-//   CAN_TX_msg.data[4] = (scaledSpeed >> 8) & 0xFF;
-//   CAN_TX_msg.data[5] = scaledSpeed & 0xFF;
-//   CAN_TX_msg.data[6] = 0x00; 
-//   CAN_TX_msg.data[7] = random(0x00, 0x100);
+  uint16_t scaledSpeed = speed_kmh * 93.5;
+  CAN_TX_msg.id = 0xC8;
+  CAN_TX_msg.len = 8;
+  CAN_TX_msg.format = STANDARD_FORMAT;
+  CAN_TX_msg.data[0] = 0x00;
+  CAN_TX_msg.data[1] = 0x00;
+  CAN_TX_msg.data[2] = 0x00;
+  CAN_TX_msg.data[3] = 0x00;
+  CAN_TX_msg.data[4] = (scaledSpeed >> 8) & 0xFF;
+  CAN_TX_msg.data[5] = scaledSpeed & 0xFF;
+  CAN_TX_msg.data[6] = 0x00; 
+  CAN_TX_msg.data[7] = random(0x00, 0x100);
 
-//   CANSend(&CAN_TX_msg);
-// }
+  CANSend(&CAN_TX_msg);
+}
 
-// void handleTaho() {
-//   if (CAN_RX_msg.id == 0x12C) {
-//     CAN_TX_msg.id = 0x20C;
-//     CAN_TX_msg.len = 8;
-//     CAN_TX_msg.format = STANDARD_FORMAT;
-//     CAN_TX_msg.data[0] = 0x02;
-//     CAN_TX_msg.data[1] = 0x3B;
-//     CAN_TX_msg.data[2] = 0x0;
-//     CAN_TX_msg.data[3] = 0x0;
-//     CAN_TX_msg.data[4] = CAN_RX_msg.data[4];
-//     CAN_TX_msg.data[5] = CAN_RX_msg.data[5];
-//     CAN_TX_msg.data[6] = CAN_RX_msg.data[6];
-//     CAN_TX_msg.data[7] = CAN_RX_msg.data[7];
+void handleTaho() {
+  if (CAN_RX_msg.id == 0x12C) {
+    CAN_TX_msg.id = 0x20C;
+    CAN_TX_msg.len = 8;
+    CAN_TX_msg.format = STANDARD_FORMAT;
+    CAN_TX_msg.data[0] = 0x02;
+    CAN_TX_msg.data[1] = 0x3B;
+    CAN_TX_msg.data[2] = 0x0;
+    CAN_TX_msg.data[3] = 0x0;
+    CAN_TX_msg.data[4] = CAN_RX_msg.data[4];
+    CAN_TX_msg.data[5] = CAN_RX_msg.data[5];
+    CAN_TX_msg.data[6] = CAN_RX_msg.data[6];
+    CAN_TX_msg.data[7] = CAN_RX_msg.data[7];
 
-//     CANSend(&CAN_TX_msg);
-//   }
-// }
+    CANSend(&CAN_TX_msg);
+  }
+}
 
 
