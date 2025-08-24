@@ -1,6 +1,6 @@
 #include "can.h"
 
-
+unsigned char txBuf[8]; 
 
 void setup() {
   Serial.begin(115200);
@@ -60,7 +60,13 @@ void parseBinaryPacket(uint8_t* buffer) {
   uint8_t len = buffer[5];
   if (len > 8) len = 8;
 
+  memcpy(txBuf, &buffer[6], len);
   bool ext = (id <= 0x7FF) ? 0 : 1;    // is extended
-  can.sendCan1(id, ext, len, buffer);  // отправить
-  can.sendCan2(id, ext, len, buffer);  // отправить
+
+  if(!ext){
+    txBuf[len-1] = random(0,100); //  random last byte for FCAN
+  }
+
+  can.sendCan1(id, ext, len, txBuf);  // отправить
+  can.sendCan2(id, ext, len, txBuf);  // отправить
 }
