@@ -22,7 +22,7 @@ bool CanBus::begin() {
 }
 
 void CanBus::connectCAN1() {
-  uint8_t initResult = CANB.begin(MCP_STDEXT, CAN1_SPEED, MCP_16MHZ);
+  uint8_t initResult = CANB.begin(MCP_STDEXT, CAN1_SPEED, CAN1_Q);
   if (initResult == CAN_OK) {
     can1_active = true;
     delay(50);  // Пауза перед конфигурацией фильтров
@@ -46,7 +46,7 @@ void CanBus::connectCAN1() {
 }
 
 void CanBus::connectCAN2() {
-  uint8_t initResult = CANF.begin(MCP_STDEXT, CAN2_SPEED, MCP_16MHZ);
+  uint8_t initResult = CANF.begin(MCP_STDEXT, CAN2_SPEED, CAN2_Q);
   if (initResult == CAN_OK) {
     can2_active = true;
     delay(50);  // Пауза перед конфигурацией фильтров
