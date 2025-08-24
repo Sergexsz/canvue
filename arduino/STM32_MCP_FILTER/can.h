@@ -35,24 +35,36 @@ private:
   void handleVIN();
   void handleOdometer();
   bool vinReady = false;  // Флаг, что VIN собран
+
+
+  void wakeupCan(); // разбудить шины
+  void standByModule(bool state, int can);
+  void control(bool state, int can);
+
+
 public:
   bool debug = false;
   long unsigned int rxId;
   unsigned char ext = 0;
   unsigned char len = 0;
-  unsigned char rxBuf[8]; 
+  unsigned char rxBuf[8];
   // char msgString[128];  // Array to store serial string
   bool begin();
   void readData();
-  void processData(); 
+  void processData();
 
   bool can1_active = true;
   bool can2_active = true;
   bool converter = false;
+  bool use_can1 = true;
+  bool use_can2 = true;
   char vin[18];  // VIN код максимум 17 символов
   void sendCan1(int id, bool ext, int dlc, byte *buf);
-    void sendCan2(int id, bool ext, int dlc, byte *buf);
+  void sendCan2(int id, bool ext, int dlc, byte *buf);
 
+  bool is_can_sleep = false;  // спит или нет шина
+  unsigned long sleepTimer;   // засекает время для сна
+  int sleepDuration = 1000;   // спустя какое время считается что шина спит
 };
 
 extern CanBus can;

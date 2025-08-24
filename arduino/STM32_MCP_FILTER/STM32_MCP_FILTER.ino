@@ -1,21 +1,24 @@
 #include "can.h"
 
-unsigned char txBuf[8]; 
+unsigned char txBuf[8];
 
 void setup() {
   Serial.begin(115200);
   Serial.println("starting...");
 
   //запустить кан
-  can.begin();
   can.converter = true;  //шлет все данные в сериал
+  can.use_can1 = true;
+  can.use_can2 = true;
+
+  can.begin();
+
 }
 
 void loop() {
+  checkSerialInput();  // проверить входящее
   // put your main code here, to run repeatedly:
   can.readData();  // считать что там у шинах кан
-
-  checkSerialInput();  // проверить входящее
 }
 
 // получить бинарные данные из шины
@@ -24,8 +27,8 @@ void checkSerialInput() {
   static uint8_t index = 0;
   static bool receiving = false;
 
-  while (Serial1.available()) {
-    uint8_t byte = Serial1.read();
+  while (Serial.available()) {
+    uint8_t byte = Serial.read();
 
     if (!receiving) {
       if (byte == 0xAA) {
@@ -61,12 +64,12 @@ void parseBinaryPacket(uint8_t* buffer) {
   if (len > 8) len = 8;
 
   memcpy(txBuf, &buffer[6], len);
-  bool ext = (id <= 0x7FF) ? 0 : 1;    // is extended
+  bool ext = (id <= 0x7FF) ? 0 : 1;  // is extended
 
-  if(!ext){
-    txBuf[len-1] = random(0,100); //  random last byte for FCAN
+  if (!ext) {
+    txBuf[len - 1] = random(0, 100);  //  random last byte for F-CAN
   }
 
-  can.sendCan1(id, ext, len, txBuf);  // отправить
-  can.sendCan2(id, ext, len, txBuf);  // отправить
+  can.sendCan1(id, ext, len, txBuf);  // отправить 1
+  can.sendCan2(id, ext, len, txBuf);  // отправить 2
 }
